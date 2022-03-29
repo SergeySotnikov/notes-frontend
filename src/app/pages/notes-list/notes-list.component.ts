@@ -6,7 +6,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Note } from 'src/app/shared/note.model';
 import { NotesService } from 'src/app/shared/notes.service';
 
@@ -95,14 +95,91 @@ import { NotesService } from 'src/app/shared/notes.service';
 })
 export class NotesListComponent implements OnInit {
   notes: Note[] = [];
+  filteredNotes: Note[] = [];
+
+  @ViewChild('filterInput')
+  filterInputElRef!: ElementRef;
 
   constructor(private notesService: NotesService) {}
 
   ngOnInit(): void {
     this.notes = this.notesService.getAll();
+    this.filter('');
   }
 
-  deleteNote(id: number) {
-    this.notesService.delete(id);
+  deleteNote(note: Note) {
+    let noteId: number = this.notesService.getId(note);
+    this.notesService.delete(noteId);
+    this.filter(this.filterInputElRef.nativeElement.value);
+  }
+
+  generateNoteUrl(note: Note) {
+    let noteId = this.notesService.getId(note);
+    return noteId;
+  }
+
+  filter(query: string) {
+    console.log(query);
+    query = query.toLowerCase().trim();
+
+    let allResults: Note[] = new Array<Note>();
+    //split up the search query into indiviual words
+    let terms: string[] = query.split(' ');
+    //remove duplicate
+    terms = this.removeDuplicates(terms);
+    //compile all relevant results
+    terms.forEach((word) => {
+      let results: Note[] = this.relevantNotes(word);
+      //append results to allRsults
+      allResults = [...allResults, ...results];
+    });
+    //allResults will include duplicate notes
+    let uniqueResults = this.removeDuplicates(allResults);
+    this.filteredNotes = uniqueResults;
+    //sort by relavancy
+    this.sortByRelevancy(allResults);
+  }
+
+  removeDuplicates(arr: Array<any>): Array<any> {
+    let uniqueResults: Set<any> = new Set<any>();
+    arr.forEach((e) => {
+      uniqueResults.add(e);
+    });
+    return Array.from(uniqueResults);
+  }
+
+  relevantNotes(query: string): Array<Note> {
+    query = query.toLowerCase().trim();
+    let relevantNotes = this.notes.filter((note) => {
+      if (note.title && note.title.toLowerCase().includes(query)) {
+        return true;
+      }
+      if (note.body && note.body.toLowerCase().includes(query)) {
+        return true;
+      }
+      return false;
+    });
+    return relevantNotes;
+  }
+
+  sortByRelevancy(searchResult: Note[]) {
+    //this metod will calculate the relevancy of a note base
+    let noteCountObj: { [index: string]: any } = {};
+    searchResult.forEach((note) => {
+      let noteId = this.notesService.getId(note);
+      if (noteCountObj[noteId]) {
+        noteCountObj[noteId] += 1;
+      } else {
+        noteCountObj[noteId] = 1;
+      }
+    });
+    this.filteredNotes = this.filteredNotes.sort((a: Note, b: Note) => {
+      let aId = this.notesService.getId(a);
+      let bId = this.notesService.getId(b);
+      let aCount = noteCountObj[aId];
+      let bCount = noteCountObj[bId];
+
+      return bCount - aCount;
+    });
   }
 }
