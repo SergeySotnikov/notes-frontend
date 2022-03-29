@@ -1,18 +1,23 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { NotesService } from '../shared/notes.service';
 
 @Component({
   selector: 'app-note-card',
   templateUrl: './note-card.component.html',
-  styleUrls: ['./note-card.component.scss']
+  styleUrls: ['./note-card.component.scss'],
 })
 export class NoteCardComponent implements OnInit {
-
   @Input('title') title!: string;
   @Input('text') text!: string;
- 
-  constructor() { }
+  @Input('link') link!: string;
 
-  ngOnInit(): void {
+  @Output('delete') deleteEvent: EventEmitter<void> = new EventEmitter<void>();
+
+  onDelete() {
+    this.deleteEvent.emit();
   }
 
+  constructor() {}
+
+  ngOnInit(): void {}
 }

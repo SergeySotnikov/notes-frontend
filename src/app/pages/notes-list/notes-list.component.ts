@@ -5,17 +5,18 @@ import { NotesService } from 'src/app/shared/notes.service';
 @Component({
   selector: 'app-notes-list',
   templateUrl: './notes-list.component.html',
-  styleUrls: ['./notes-list.component.scss']
+  styleUrls: ['./notes-list.component.scss'],
 })
 export class NotesListComponent implements OnInit {
+  notes: Note[] = [];
 
-  notes: Note[]=[];
-
-  constructor(private notesService :NotesService) { }
+  constructor(private notesService: NotesService) {}
 
   ngOnInit(): void {
-    this.notes=this.notesService.getAll();
-
+    this.notes = this.notesService.getAll();
   }
 
+  deleteNote(id: number) {
+    this.notesService.delete(id);
+  }
 }
