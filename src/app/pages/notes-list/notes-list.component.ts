@@ -115,11 +115,10 @@ export class NotesListComponent implements OnInit {
 
   generateNoteUrl(note: Note) {
     let noteId = this.notesService.getId(note);
-    return noteId;
+    return noteId.toString();
   }
 
   filter(query: string) {
-    console.log(query);
     query = query.toLowerCase().trim();
 
     let allResults: Note[] = new Array<Note>();

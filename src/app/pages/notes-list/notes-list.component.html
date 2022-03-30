@@ -19,7 +19,7 @@
   <div class="notes-list" [@listAnim]>
     <app-note-card
       *ngFor="let note of filteredNotes"
-      link="generateNoteUrl(note)"
+      [link]="generateNoteUrl(note)"
       [@itemAnim]
       (delete)="deleteNote(note)"
       [title]="note.title"
